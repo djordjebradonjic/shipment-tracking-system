@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shipment Tracking</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; margin: 2rem; background: #f7f7f8; }
+        h1 { color: #1a1a2e; }
+        .forms { display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .form-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex: 1; min-width: 280px; }
+        .form-card h2 { margin-top: 0; font-size: 1.1rem; color: #1a1a2e; }
+        .form-card label { display: block; margin-top: 0.75rem; font-size: 0.85rem; color: #555; }
+        .form-card input, .form-card select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .form-card button { margin-top: 1rem; width: 100%; padding: 0.6rem; background: #1a1a2e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .msg { margin-top: 0.5rem; font-size: 0.85rem; min-height: 1.2em; }
+        .msg.success { color: #198754; }
+        .msg.error { color: #dc3545; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #1a1a2e; color: white; font-weight: 600; }
+        .badge { padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: white; }
+        .CREATED { background: #6c757d; }
+        .IN_TRANSIT { background: #0d6efd; }
+        .DELIVERED { background: #198754; }
+        .CANCELLED { background: #dc3545; }
+        button { padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .btn-advance { background: #0d6efd; color: white; }
+        .btn-cancel { background: #dc3545; color: white; }
+        #refresh { margin-bottom: 1rem; padding: 0.5rem 1rem; background: #1a1a2e; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>Shipment Tracking</h1>
+
+<div class="forms">
+    <div class="form-card">
+        <h2>Create User</h2>
+        <label>First Name</label>
+        <input type="text" id="user-firstName">
+        <label>Last Name</label>
+        <input type="text" id="user-lastName">
+        <label>Email</label>
+        <input type="email" id="user-email">
+        <label>Phone</label>
+        <input type="text" id="user-phone">
+        <button onclick="createUser()">Create User</button>
+        <div id="user-msg" class="msg"></div>
+    </div>
+
+    <div class="form-card">
+        <h2>Create Shipment</h2>
+        <label>User</label>
+        <select id="shipment-userId"></select>
+        <label>Description</label>
+        <input type="text" id="shipment-description">
+        <label>Origin</label>
+        <input type="text" id="shipment-origin">
+        <label>Destination</label>
+        <input type="text" id="shipment-destination">
+        <label>Weight (kg)</label>
+        <input type="number" step="0.01" id="shipment-weight">
+        <button onclick="createShipment()">Create Shipment</button>
+        <div id="shipment-msg" class="msg"></div>
+    </div>
+</div>
+
+<button id="refresh" onclick="loadShipments()">Refresh Shipments</button>
+<table>
+    <thead>
+    <tr>
+        <th>Tracking #</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="shipments-body"></tbody>
+</table>
+
+<script>
+    const USERS_API = '/api/v1/users';
+    const SHIPMENTS_API = '/api/v1/shipments';
+
+    const NEXT_STATUSES = {
+        CREATED: [{ status: 'IN_TRANSIT', label: 'Start Transit', cls: 'btn-advance' }, { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }],
+        IN_TRANSIT: [{ status: 'DELIVERED', label: 'Mark Delivered', cls: 'btn-advance' }, { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }],
+        DELIVERED: [],
+        CANCELLED: []
+    };
+
+    async function loadUsers() {
+        const res = await fetch(USERS_API);
+        const users = await res.json();
+        const select = document.getElementById('shipment-userId');
+        select.innerHTML = users.map(u => `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`).join('');
+    }
+
+    async function createUser() {
+        const body = {
+            firstName: document.getElementById('user-firstName').value,
+            lastName: document.getElementById('user-lastName').value,
+            email: document.getElementById('user-email').value,
+            phone: document.getElementById('user-phone').value
+        };
+        const res = await fetch(USERS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const msg = document.getElementById('user-msg');
+        if (res.ok) {
+            msg.textContent = `Created user #${data.id}`;
+            msg.className = 'msg success';
+            loadUsers();
+        } else {
+            msg.textContent = data.message;
+            msg.className = 'msg error';
+        }
+    }
+
+    async function createShipment() {
+        const weightInput = document.getElementById('shipment-weight').value;
+        const body = {
+            userId: Number(document.getElementById('shipment-userId').value),
+            description: document.getElementById('shipment-description').value,
+            origin: document.getElementById('shipment-origin').value,
+            destination: document.getElementById('shipment-destination').value,
+            weightKg: weightInput ? Number(weightInput) : null
+        };
+        const res = await fetch(SHIPMENTS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const msg = document.getElementById('shipment-msg');
+        if (res.ok) {
+            msg.textContent = `Created shipment ${data.trackingNumber}`;
+            msg.className = 'msg success';
+            loadShipments();
+        } else {
+            msg.textContent = data.message;
+            msg.className = 'msg error';
+        }
+    }
+
+    async function loadShipments() {
+        const res = await fetch(SHIPMENTS_API);
+        const shipments = await res.json();
+        const tbody = document.getElementById('shipments-body');
+        tbody.innerHTML = '';
+
+        shipments.forEach(s => {
+            const row = document.createElement('tr');
+            const actions = (NEXT_STATUSES[s.currentStatus] || [])
+                .map(opt => `<button class="${opt.cls}" onclick="updateStatus(${s.id}, '${opt.status}')">${opt.label}</button>`)
+                .join('');
+
+            row.innerHTML = `
+                    <td>${s.trackingNumber}</td>
+                    <td>${s.description}</td>
+                    <td><span class="badge ${s.currentStatus}">${s.currentStatus}</span></td>
+                    <td>${actions}</td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    async function updateStatus(id, status) {
+        const res = await fetch(`${SHIPMENTS_API}/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert('Error: ' + err.message);
+            return;
+        }
+        loadShipments();
+    }
+
+    loadUsers();
+    loadShipments();
+</script>
+</body>
+</html>
