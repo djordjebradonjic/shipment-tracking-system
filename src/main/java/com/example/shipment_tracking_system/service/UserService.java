@@ -1,0 +1,33 @@
+package com.example.shipment_tracking_system.service;
+
+import com.example.shipment_tracking_system.dto.request.UserCreateRequest;
+import com.example.shipment_tracking_system.dto.response.UserResponse;
+import com.example.shipment_tracking_system.exception.ResourceNotFoundException;
+import com.example.shipment_tracking_system.mapper.UserMapper;
+import com.example.shipment_tracking_system.model.User;
+import com.example.shipment_tracking_system.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+
+    public UserResponse create(UserCreateRequest request) {
+        User user = userMapper.toEntity(request);
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        return userMapper.toResponse(user);
+    }
+}
