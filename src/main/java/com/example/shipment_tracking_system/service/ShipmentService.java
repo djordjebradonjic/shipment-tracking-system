@@ -1,0 +1,75 @@
+package com.example.shipment_tracking_system.service;
+
+import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
+import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
+import com.example.shipment_tracking_system.exception.ResourceNotFoundException;
+import com.example.shipment_tracking_system.mapper.ShipmentMapper;
+import com.example.shipment_tracking_system.model.Shipment;
+import com.example.shipment_tracking_system.model.ShipmentStatus;
+import com.example.shipment_tracking_system.model.ShipmentStatusHistory;
+import com.example.shipment_tracking_system.model.User;
+import com.example.shipment_tracking_system.repository.ShipmentRepository;
+import com.example.shipment_tracking_system.repository.ShipmentStatusHistoryRepository;
+import com.example.shipment_tracking_system.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Year;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class ShipmentService {
+
+    private final ShipmentRepository shipmentRepository;
+    private final ShipmentStatusHistoryRepository statusHistoryRepository;
+    private final UserRepository userRepository;
+    private final ShipmentMapper shipmentMapper;
+
+    public ShipmentResponse create(ShipmentCreateRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+
+        Shipment shipment = shipmentMapper.toEntity(request);
+        shipment.setUser(user);
+        shipment.setTrackingNumber(generateTrackingNumber());
+        shipment.setCurrentStatus(ShipmentStatus.CREATED);
+
+        Shipment saved = shipmentRepository.save(shipment);
+
+        ShipmentStatusHistory history = ShipmentStatusHistory.builder()
+                .shipment(saved)
+                .status(ShipmentStatus.CREATED)
+                .note("Shipment created")
+                .build();
+        statusHistoryRepository.save(history);
+
+        log.info("Created shipment {} for user {}", saved.getTrackingNumber(), user.getId());
+
+        return shipmentMapper.toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public ShipmentResponse getById(Long id) {
+        Shipment shipment = shipmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shipment not found with id: " + id));
+        return shipmentMapper.toResponse(shipment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShipmentResponse> getAll() {
+        return shipmentRepository.findAll().stream()
+                .map(shipmentMapper::toResponse)
+                .toList();
+    }
+
+    private String generateTrackingNumber() {
+        String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        return "#" + Year.now().getValue() + "-" + suffix;
+    }
+}
