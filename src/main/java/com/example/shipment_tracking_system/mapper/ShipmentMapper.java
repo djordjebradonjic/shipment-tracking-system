@@ -6,6 +6,9 @@ import com.example.shipment_tracking_system.model.Shipment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
+import com.example.shipment_tracking_system.model.ShipmentStatusHistory;
+
 @Mapper(componentModel = "spring")
 public interface ShipmentMapper {
 
@@ -19,4 +22,6 @@ public interface ShipmentMapper {
 
     @Mapping(source = "user.id", target = "userId")
     ShipmentResponse toResponse(Shipment shipment);
+
+    ShipmentStatusHistoryResponse toHistoryResponse(ShipmentStatusHistory history);
 }

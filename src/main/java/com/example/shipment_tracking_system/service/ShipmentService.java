@@ -1,5 +1,9 @@
 package com.example.shipment_tracking_system.service;
 
+import com.example.shipment_tracking_system.dto.request.ShipmentStatusUpdateRequest;
+import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
+import com.example.shipment_tracking_system.exception.InvalidStatusTransitionException;
+
 import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.exception.ResourceNotFoundException;
@@ -30,6 +34,7 @@ public class ShipmentService {
     private final ShipmentStatusHistoryRepository statusHistoryRepository;
     private final UserRepository userRepository;
     private final ShipmentMapper shipmentMapper;
+    private final ShipmentStatusTransitionValidator transitionValidator;
 
     public ShipmentResponse create(ShipmentCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -67,6 +72,45 @@ public class ShipmentService {
                 .map(shipmentMapper::toResponse)
                 .toList();
     }
+
+    public ShipmentResponse updateStatus(Long id, ShipmentStatusUpdateRequest request) {
+        Shipment shipment = shipmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shipment not found with id: " + id));
+
+        ShipmentStatus currentStatus = shipment.getCurrentStatus();
+        ShipmentStatus newStatus = request.getStatus();
+
+        if (!transitionValidator.isAllowed(currentStatus, newStatus)) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot transition shipment from " + currentStatus + " to " + newStatus);
+        }
+
+        shipment.setCurrentStatus(newStatus);
+        Shipment saved = shipmentRepository.save(shipment);
+
+        ShipmentStatusHistory history = ShipmentStatusHistory.builder()
+                .shipment(saved)
+                .status(newStatus)
+                .note(request.getNote())
+                .build();
+        statusHistoryRepository.save(history);
+
+        log.info("Shipment {} transitioned from {} to {}", saved.getTrackingNumber(), currentStatus, newStatus);
+
+        return shipmentMapper.toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShipmentStatusHistoryResponse> getHistory(Long id) {
+        if (!shipmentRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Shipment not found with id: " + id);
+        }
+        return statusHistoryRepository.findByShipmentIdOrderByChangedAtAsc(id).stream()
+                .map(shipmentMapper::toHistoryResponse)
+                .toList();
+    }
+
+
 
     private String generateTrackingNumber() {
         String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase();

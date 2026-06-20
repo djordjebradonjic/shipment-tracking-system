@@ -1,5 +1,8 @@
 package com.example.shipment_tracking_system.controller;
 
+import com.example.shipment_tracking_system.dto.request.ShipmentStatusUpdateRequest;
+import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
+
 import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.service.ShipmentService;
@@ -32,5 +35,15 @@ public class ShipmentController {
     @GetMapping
     public ResponseEntity<List<ShipmentResponse>> getAll() {
         return ResponseEntity.ok(shipmentService.getAll());
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ShipmentResponse> updateStatus(@PathVariable Long id, @Valid @RequestBody ShipmentStatusUpdateRequest request) {
+        return ResponseEntity.ok(shipmentService.updateStatus(id, request));
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<List<ShipmentStatusHistoryResponse>> getHistory(@PathVariable Long id) {
+        return ResponseEntity.ok(shipmentService.getHistory(id));
     }
 }
