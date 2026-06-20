@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/shipments}
     username: ${SPRING_DATASOURCE_USERNAME:shipments_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:change_}
+    password: ${SPRING_DATASOURCE_PASSWORD:change_me}
 
   jpa:
     hibernate:
