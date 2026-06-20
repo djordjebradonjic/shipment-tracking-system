@@ -2,7 +2,8 @@ package com.example.shipment_tracking_system.repository;
 
 import com.example.shipment_tracking_system.model.Shipment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
+public interface ShipmentRepository extends JpaRepository<Shipment, Long>, JpaSpecificationExecutor<Shipment> {
 
 }

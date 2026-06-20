@@ -8,9 +8,19 @@ import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.service.ShipmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+
+import com.example.shipment_tracking_system.model.ShipmentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.Instant;
 
 import java.util.List;
 
@@ -32,10 +42,6 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.getById(id));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ShipmentResponse>> getAll() {
-        return ResponseEntity.ok(shipmentService.getAll());
-    }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ShipmentResponse> updateStatus(@PathVariable Long id, @Valid @RequestBody ShipmentStatusUpdateRequest request) {
@@ -45,5 +51,15 @@ public class ShipmentController {
     @GetMapping("/{id}/history")
     public ResponseEntity<List<ShipmentStatusHistoryResponse>> getHistory(@PathVariable Long id) {
         return ResponseEntity.ok(shipmentService.getHistory(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ShipmentResponse>> search(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) ShipmentStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant createdTo,
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(shipmentService.search(userId, status, createdFrom, createdTo, pageable));
     }
 }

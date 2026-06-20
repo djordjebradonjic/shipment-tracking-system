@@ -4,6 +4,12 @@ import com.example.shipment_tracking_system.dto.request.ShipmentStatusUpdateRequ
 import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
 import com.example.shipment_tracking_system.exception.InvalidStatusTransitionException;
 
+import com.example.shipment_tracking_system.repository.ShipmentSpecifications;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import java.time.Instant;
+
 import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.exception.ResourceNotFoundException;
@@ -20,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.Year;
 import java.util.List;
 import java.util.UUID;
@@ -108,6 +115,17 @@ public class ShipmentService {
         return statusHistoryRepository.findByShipmentIdOrderByChangedAtAsc(id).stream()
                 .map(shipmentMapper::toHistoryResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ShipmentResponse> search(Long userId, ShipmentStatus status, Instant createdFrom, Instant createdTo, Pageable pageable) {
+        Specification<Shipment> spec = Specification.where(ShipmentSpecifications.hasUserId(userId))
+                .and(ShipmentSpecifications.hasStatus(status))
+                .and(ShipmentSpecifications.createdAfter(createdFrom))
+                .and(ShipmentSpecifications.createdBefore(createdTo));
+
+        return shipmentRepository.findAll(spec, pageable)
+                .map(shipmentMapper::toResponse);
     }
 
 
