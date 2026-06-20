@@ -38,10 +38,9 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, "A record with this data already exists or violates a database constraint.", request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error", ex);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.", request);
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Void> handleStaticResourceNotFound() {
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(InvalidStatusTransitionException.class)
@@ -49,6 +48,14 @@ public class GlobalExceptionHandler {
         log.warn("Invalid status transition: {}", ex.getMessage());
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.", request);
+    }
+
+
 
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
         ErrorResponse error = ErrorResponse.builder()

@@ -15,6 +15,11 @@
         .msg { margin-top: 0.5rem; font-size: 0.85rem; min-height: 1.2em; }
         .msg.success { color: #198754; }
         .msg.error { color: #dc3545; }
+        .filter-bar { display: flex; gap: 0.75rem; align-items: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-bar select { padding: 0.45rem; border: 1px solid #ddd; border-radius: 6px; }
+        .filter-bar button { padding: 0.45rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-apply { background: #1a1a2e; color: white; }
+        .btn-clear { background: #e9ecef; color: #1a1a2e; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #1a1a2e; color: white; font-weight: 600; }
@@ -23,10 +28,8 @@
         .IN_TRANSIT { background: #0d6efd; }
         .DELIVERED { background: #198754; }
         .CANCELLED { background: #dc3545; }
-        button { padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
-        .btn-advance { background: #0d6efd; color: white; }
-        .btn-cancel { background: #dc3545; color: white; }
-        #refresh { margin-bottom: 1rem; padding: 0.5rem 1rem; background: #1a1a2e; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        button.btn-advance { background: #0d6efd; color: white; padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        button.btn-cancel { background: #dc3545; color: white; padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -64,7 +67,23 @@
     </div>
 </div>
 
-<button id="refresh" onclick="loadShipments()">Refresh Shipments</button>
+<div class="filter-bar">
+    <select id="filter-status">
+        <option value="">All Statuses</option>
+        <option value="CREATED">CREATED</option>
+        <option value="IN_TRANSIT">IN_TRANSIT</option>
+        <option value="DELIVERED">DELIVERED</option>
+        <option value="CANCELLED">CANCELLED</option>
+    </select>
+    <select id="filter-userId">
+        <option value="">All Users</option>
+    </select>
+    <input type="date" id="filter-createdFrom" title="Created from">
+    <input type="date" id="filter-createdTo" title="Created to">
+    <button class="btn-apply" onclick="loadShipments()">Apply Filters</button>
+    <button class="btn-clear" onclick="clearFilters()">Clear</button>
+</div>
+
 <table>
     <thead>
     <tr>
@@ -91,8 +110,10 @@
     async function loadUsers() {
         const res = await fetch(USERS_API);
         const users = await res.json();
-        const select = document.getElementById('shipment-userId');
-        select.innerHTML = users.map(u => `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`).join('');
+        const options = users.map(u => `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`).join('');
+
+        document.getElementById('shipment-userId').innerHTML = options;
+        document.getElementById('filter-userId').innerHTML = '<option value="">All Users</option>' + options;
     }
 
     async function createUser() {
@@ -145,9 +166,31 @@
         }
     }
 
+    function clearFilters() {
+        document.getElementById('filter-status').value = '';
+        document.getElementById('filter-userId').value = '';
+        document.getElementById('filter-createdFrom').value = '';
+        document.getElementById('filter-createdTo').value = '';
+        loadShipments();
+    }
+
     async function loadShipments() {
-        const res = await fetch(SHIPMENTS_API);
-        const shipments = await res.json();
+        const status = document.getElementById('filter-status').value;
+        const userId = document.getElementById('filter-userId').value;
+        const createdFrom = document.getElementById('filter-createdFrom').value;
+        const createdTo = document.getElementById('filter-createdTo').value;
+
+        const params = new URLSearchParams();
+        if (status) params.append('status', status);
+        if (userId) params.append('userId', userId);
+        if (createdFrom) params.append('createdFrom', createdFrom + 'T00:00:00Z');
+        if (createdTo) params.append('createdTo', createdTo + 'T23:59:59Z');
+        params.append('size', '50');
+        params.append('sort', 'createdAt,desc');
+
+        const res = await fetch(`${SHIPMENTS_API}?${params.toString()}`);
+        const page = await res.json();
+        const shipments = page.content;
         const tbody = document.getElementById('shipments-body');
         tbody.innerHTML = '';
 
