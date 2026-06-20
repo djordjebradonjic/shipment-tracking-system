@@ -16,7 +16,7 @@
         .msg.success { color: #198754; }
         .msg.error { color: #dc3545; }
         .filter-bar { display: flex; gap: 0.75rem; align-items: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1rem; flex-wrap: wrap; }
-        .filter-bar select { padding: 0.45rem; border: 1px solid #ddd; border-radius: 6px; }
+        .filter-bar select, .filter-bar input { padding: 0.45rem; border: 1px solid #ddd; border-radius: 6px; }
         .filter-bar button { padding: 0.45rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-apply { background: #1a1a2e; color: white; }
         .btn-clear { background: #e9ecef; color: #1a1a2e; }
@@ -30,6 +30,11 @@
         .CANCELLED { background: #dc3545; }
         button.btn-advance { background: #0d6efd; color: white; padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
         button.btn-cancel { background: #dc3545; color: white; padding: 0.35rem 0.75rem; margin-right: 0.4rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .btn-history { background: #6c757d; color: white; padding: 0.35rem 0.75rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 1.5rem; border-radius: 8px; max-width: 500px; width: 90%; max-height: 70vh; overflow-y: auto; }
+        .modal-content ul { list-style: none; padding: 0; margin: 1rem 0; }
+        .modal-content li { padding: 0.6rem 0; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -95,6 +100,14 @@
     </thead>
     <tbody id="shipments-body"></tbody>
 </table>
+
+<div id="history-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h2 id="history-title">History</h2>
+        <ul id="history-list"></ul>
+        <button onclick="closeHistory()">Close</button>
+    </div>
+</div>
 
 <script>
     const USERS_API = '/api/v1/users';
@@ -198,7 +211,7 @@
             const row = document.createElement('tr');
             const actions = (NEXT_STATUSES[s.currentStatus] || [])
                 .map(opt => `<button class="${opt.cls}" onclick="updateStatus(${s.id}, '${opt.status}')">${opt.label}</button>`)
-                .join('');
+                .join('') + `<button class="btn-history" onclick="showHistory(${s.id}, '${s.trackingNumber}')">History</button>`;
 
             row.innerHTML = `
                     <td>${s.trackingNumber}</td>
@@ -222,6 +235,29 @@
             return;
         }
         loadShipments();
+    }
+
+    async function showHistory(shipmentId, trackingNumber) {
+        const res = await fetch(`${SHIPMENTS_API}/${shipmentId}/history`);
+        const history = await res.json();
+
+        document.getElementById('history-title').textContent = `History — ${trackingNumber}`;
+        const list = document.getElementById('history-list');
+        list.innerHTML = history.map(h => `
+                <li>
+                    <span class="badge ${h.status}">${h.status}</span>
+                    <div style="margin-top:0.3rem; font-size:0.85rem; color:#555;">
+                        ${new Date(h.changedAt).toLocaleString()}
+                        ${h.note ? ' — ' + h.note : ''}
+                    </div>
+                </li>
+            `).join('');
+
+        document.getElementById('history-modal').style.display = 'flex';
+    }
+
+    function closeHistory() {
+        document.getElementById('history-modal').style.display = 'none';
     }
 
     loadUsers();
