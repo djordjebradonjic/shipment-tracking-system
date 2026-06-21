@@ -42,6 +42,7 @@ public class ShipmentService {
     private final UserRepository userRepository;
     private final ShipmentMapper shipmentMapper;
     private final ShipmentStatusTransitionValidator transitionValidator;
+    private final TrackingNumberGenerator trackingNumberGenerator;
 
     public ShipmentResponse create(ShipmentCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -49,7 +50,7 @@ public class ShipmentService {
 
         Shipment shipment = shipmentMapper.toEntity(request);
         shipment.setUser(user);
-        shipment.setTrackingNumber(generateTrackingNumber());
+        shipment.setTrackingNumber(trackingNumberGenerator.generate());
         shipment.setCurrentStatus(ShipmentStatus.CREATED);
 
         Shipment saved = shipmentRepository.save(shipment);
@@ -130,8 +131,5 @@ public class ShipmentService {
 
 
 
-    private String generateTrackingNumber() {
-        String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        return "#" + Year.now().getValue() + "-" + suffix;
-    }
+
 }

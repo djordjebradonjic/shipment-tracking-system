@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         log.warn("Invalid status transition: {}", ex.getMessage());
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
+    @ExceptionHandler(CsvParsingException.class)
+    public ResponseEntity<ErrorResponse> handleCsvParsing(CsvParsingException ex, HttpServletRequest request) {
+        log.warn("CSV parsing failed: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {

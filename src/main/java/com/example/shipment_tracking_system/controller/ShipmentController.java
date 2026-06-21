@@ -3,8 +3,13 @@ package com.example.shipment_tracking_system.controller;
 import com.example.shipment_tracking_system.dto.request.ShipmentStatusUpdateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
 
+import com.example.shipment_tracking_system.dto.response.ImportReportResponse;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
+import com.example.shipment_tracking_system.service.ShipmentImportService;
 import com.example.shipment_tracking_system.service.ShipmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +35,7 @@ import java.util.List;
 public class ShipmentController {
 
     private final ShipmentService shipmentService;
+    private final ShipmentImportService shipmentImportService;
 
     @PostMapping
     public ResponseEntity<ShipmentResponse> create(@Valid @RequestBody ShipmentCreateRequest request) {
@@ -51,6 +57,13 @@ public class ShipmentController {
     @GetMapping("/{id}/history")
     public ResponseEntity<List<ShipmentStatusHistoryResponse>> getHistory(@PathVariable Long id) {
         return ResponseEntity.ok(shipmentService.getHistory(id));
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImportReportResponse> importCsv(@RequestParam("file") MultipartFile file) {
+        ImportReportResponse report = shipmentImportService.importCsv(file);
+        HttpStatus status = report.getErrors().isEmpty() ? HttpStatus.CREATED : HttpStatus.UNPROCESSABLE_ENTITY;
+        return ResponseEntity.status(status).body(report);
     }
 
     @GetMapping
