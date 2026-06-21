@@ -1,0 +1,5 @@
+email,firstName,lastName,phone,description,origin,destination,weightKg,status
+marko@test.com,Marko,Petrovic,0601234567,Laptop Dell XPS 15,Novi Sad,Beograd,2.1,
+ana@test.com,Ana,Anic,0639876543,Knjige - kolekcija romana,Beograd,Nis,1.5,
+marko@test.com,Marko,Petrovic,0601234567,Kuhinjski aparat,Novi Sad,Subotica,4.8,
+novi.korisnik@test.com,Jovana,Jovic,0631112233,Sportska oprema,Beograd,Kragujevac,3.2,IN_TRANSIT

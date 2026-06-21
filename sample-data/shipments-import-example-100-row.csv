@@ -1,0 +1,101 @@
+email,firstName,lastName,phone,description,origin,destination,weightKg,status
+user14@test.com,Marija,Nikolic,0620468346,Lampa stona,Nis,Leskovac,13.5,CANCELLED
+user7@test.com,Jelena,Stankovic,0686533593,Decja igracka,Leskovac,Novi Sad,3.8,CANCELLED
+user8@test.com,Sara,Pavlovic,0668883755,Kucni aparat - mikser,Pancevo,Cacak,,
+user10@test.com,Petar,Stojanovic,0669704024,Kuhinjski aparat,Nis,Cacak,6.2,CANCELLED
+user12@test.com,Dusan,Markovic,0677478345,Lampa stona,Novi Pazar,Nis,10.9,
+user1@test.com,Milica,Ilic,0633878002,Alat - set kljuceva,Novi Pazar,Kragujevac,14.6,DELIVERED
+user13@test.com,Tamara,Markovic,0620764661,Decja igracka,Subotica,Leskovac,,
+user9@test.com,Sara,Petrovic,0664579487,Tableta Samsung,Subotica,Uzice,4.1,
+user11@test.com,Filip,Ilic,0690701842,Tepih,Pancevo,Beograd,8.2,
+user3@test.com,Jelena,Stevanovic,0676568267,Sportska oprema,Subotica,Zrenjanin,3.7,CANCELLED
+user15@test.com,Filip,Djordjevic,0622871302,Bicikl deciji,Leskovac,Cacak,11.8,
+user6@test.com,Stefan,Markovic,0647948803,Kucni aparat - mikser,Nis,Uzice,7.8,IN_TRANSIT
+user12@test.com,Dusan,Markovic,0677478345,Kuhinjski aparat,Zrenjanin,Kraljevo,6.2,DELIVERED
+user4@test.com,Nikola,Djordjevic,0631905569,Kucni aparat - mikser,Leskovac,Subotica,,
+user18@test.com,Ana,Stojanovic,0695667111,Kucni aparat - mikser,Zrenjanin,Beograd,2.4,
+user2@test.com,Stefan,Petrovic,0660753722,Tepih,Novi Sad,Beograd,6.6,DELIVERED
+user3@test.com,Jelena,Stevanovic,0676568267,Laptop Dell XPS 15,Subotica,Uzice,8.3,
+user17@test.com,Milica,Stojanovic,0668033033,Mobilni telefon,Subotica,Leskovac,8.2,IN_TRANSIT
+user3@test.com,Jelena,Stevanovic,0676568267,Kuhinjski aparat,Pancevo,Uzice,1.8,IN_TRANSIT
+user18@test.com,Ana,Stojanovic,0695667111,Kucni aparat - mikser,Leskovac,Novi Pazar,,
+user5@test.com,Dusan,Nikolic,0637969756,Tableta Samsung,Uzice,Beograd,13.0,DELIVERED
+user7@test.com,Jelena,Stankovic,0686533593,Sportska oprema,Novi Sad,Kragujevac,4.6,DELIVERED
+user9@test.com,Sara,Petrovic,0664579487,Bicikl deciji,Kragujevac,Cacak,5.3,IN_TRANSIT
+user16@test.com,Nikola,Pavlovic,0676354323,Garderoba - paket,Uzice,Novi Pazar,3.5,DELIVERED
+user4@test.com,Nikola,Djordjevic,0631905569,Obuca sportska,Kragujevac,Leskovac,7.2,
+user9@test.com,Sara,Petrovic,0664579487,Sportska oprema,Cacak,Novi Sad,8.1,DELIVERED
+user12@test.com,Dusan,Markovic,0677478345,Lampa stona,Novi Sad,Uzice,9.7,IN_TRANSIT
+user18@test.com,Ana,Stojanovic,0695667111,Decja igracka,Leskovac,Kraljevo,12.2,
+user16@test.com,Nikola,Pavlovic,0676354323,Slusalice bezicne,Uzice,Pancevo,,
+user16@test.com,Nikola,Pavlovic,0676354323,Kafe aparat,Nis,Leskovac,8.6,DELIVERED
+user6@test.com,Stefan,Markovic,0647948803,Sportska oprema,Cacak,Novi Sad,7.3,DELIVERED
+user6@test.com,Stefan,Markovic,0647948803,Laptop Dell XPS 15,Zrenjanin,Beograd,4.2,
+user11@test.com,Filip,Ilic,0690701842,Tepih,Kragujevac,Beograd,,
+user5@test.com,Dusan,Nikolic,0637969756,Alat - set kljuceva,Kragujevac,Novi Pazar,8.5,
+user15@test.com,Filip,Djordjevic,0622871302,Bicikl deciji,Leskovac,Subotica,13.7,IN_TRANSIT
+user4@test.com,Nikola,Djordjevic,0631905569,Decja igracka,Cacak,Nis,12.3,
+user18@test.com,Ana,Stojanovic,0695667111,Knjige - kolekcija romana,Pancevo,Cacak,7.9,IN_TRANSIT
+user5@test.com,Dusan,Nikolic,0637969756,Bicikl deciji,Novi Sad,Cacak,12.9,
+user16@test.com,Nikola,Pavlovic,0676354323,Sportska oprema,Subotica,Novi Pazar,12.4,CANCELLED
+user7@test.com,Jelena,Stankovic,0686533593,Lampa stona,Leskovac,Zrenjanin,10.1,
+user1@test.com,Milica,Ilic,0633878002,Laptop Dell XPS 15,Zrenjanin,Subotica,3.0,IN_TRANSIT
+user13@test.com,Tamara,Markovic,0620764661,Mobilni telefon,Kragujevac,Novi Pazar,7.4,
+user17@test.com,Milica,Stojanovic,0668033033,Sportska oprema,Pancevo,Beograd,5.0,
+user3@test.com,Jelena,Stevanovic,0676568267,Kafe aparat,Cacak,Zrenjanin,1.4,DELIVERED
+user12@test.com,Dusan,Markovic,0677478345,Knjige - kolekcija romana,Cacak,Novi Pazar,13.7,
+user8@test.com,Sara,Pavlovic,0668883755,Lampa stona,Novi Pazar,Kraljevo,7.6,
+user5@test.com,Dusan,Nikolic,0637969756,Laptop Dell XPS 15,Novi Sad,Kragujevac,,
+user10@test.com,Petar,Stojanovic,0669704024,Decja igracka,Pancevo,Leskovac,0.5,
+user11@test.com,Filip,Ilic,0690701842,Knjige - kolekcija romana,Zrenjanin,Kraljevo,13.3,DELIVERED
+user14@test.com,Marija,Nikolic,0620468346,Lampa stona,Beograd,Leskovac,6.1,
+user11@test.com,Filip,Ilic,0690701842,Decja igracka,Uzice,Kragujevac,0.5,
+user12@test.com,Dusan,Markovic,0677478345,Slusalice bezicne,Novi Sad,Kragujevac,6.5,
+user2@test.com,Stefan,Petrovic,0660753722,Mobilni telefon,Leskovac,Nis,0.4,CANCELLED
+user6@test.com,Stefan,Markovic,0647948803,Garderoba - paket,Leskovac,Zrenjanin,,IN_TRANSIT
+user5@test.com,Dusan,Nikolic,0637969756,Obuca sportska,Beograd,Nis,6.4,DELIVERED
+user9@test.com,Sara,Petrovic,0664579487,Knjige - kolekcija romana,Novi Sad,Kragujevac,14.8,
+user17@test.com,Milica,Stojanovic,0668033033,Slusalice bezicne,Beograd,Kragujevac,14.1,
+user4@test.com,Nikola,Djordjevic,0631905569,Garderoba - paket,Zrenjanin,Pancevo,10.7,
+user14@test.com,Marija,Nikolic,0620468346,Kucni aparat - mikser,Cacak,Subotica,3.7,CANCELLED
+user2@test.com,Stefan,Petrovic,0660753722,Sportska oprema,Kraljevo,Cacak,7.5,DELIVERED
+user3@test.com,Jelena,Stevanovic,0676568267,Obuca sportska,Novi Pazar,Beograd,6.0,DELIVERED
+user15@test.com,Filip,Djordjevic,0622871302,Tepih,Uzice,Beograd,,DELIVERED
+user7@test.com,Jelena,Stankovic,0686533593,Kafe aparat,Novi Sad,Pancevo,12.8,
+user10@test.com,Petar,Stojanovic,0669704024,Kafe aparat,Novi Pazar,Kragujevac,8.7,IN_TRANSIT
+user14@test.com,Marija,Nikolic,0620468346,Laptop Dell XPS 15,Novi Pazar,Zrenjanin,5.7,CANCELLED
+user16@test.com,Nikola,Pavlovic,0676354323,Decja igracka,Subotica,Kragujevac,3.7,
+user2@test.com,Stefan,Petrovic,0660753722,Obuca sportska,Kraljevo,Zrenjanin,,
+user15@test.com,Filip,Djordjevic,0622871302,Tepih,Uzice,Kraljevo,7.1,CANCELLED
+user1@test.com,Milica,Ilic,0633878002,Tableta Samsung,Novi Pazar,Zrenjanin,1.6,
+user5@test.com,Dusan,Nikolic,0637969756,Lampa stona,Novi Sad,Pancevo,0.2,
+user1@test.com,Milica,Ilic,0633878002,Laptop Dell XPS 15,Subotica,Nis,0.9,
+user14@test.com,Marija,Nikolic,0620468346,Garderoba - paket,Pancevo,Leskovac,5.2,IN_TRANSIT
+user11@test.com,Filip,Ilic,0690701842,Bicikl deciji,Novi Pazar,Subotica,1.7,
+user10@test.com,Petar,Stojanovic,0669704024,Tableta Samsung,Kraljevo,Kragujevac,13.5,
+user13@test.com,Tamara,Markovic,0620764661,Alat - set kljuceva,Cacak,Zrenjanin,12.5,IN_TRANSIT
+user18@test.com,Ana,Stojanovic,0695667111,Decja igracka,Cacak,Kraljevo,8.6,
+user8@test.com,Sara,Pavlovic,0668883755,Obuca sportska,Leskovac,Novi Sad,8.4,
+user16@test.com,Nikola,Pavlovic,0676354323,Kucni aparat - mikser,Novi Pazar,Zrenjanin,,IN_TRANSIT
+user5@test.com,Dusan,Nikolic,0637969756,Garderoba - paket,Zrenjanin,Beograd,1.3,
+user14@test.com,Marija,Nikolic,0620468346,Knjige - kolekcija romana,Cacak,Zrenjanin,6.7,DELIVERED
+user12@test.com,Dusan,Markovic,0677478345,Obuca sportska,Subotica,Pancevo,9.1,IN_TRANSIT
+user10@test.com,Petar,Stojanovic,0669704024,Laptop Dell XPS 15,Kraljevo,Pancevo,7.0,CANCELLED
+user13@test.com,Tamara,Markovic,0620764661,Kuhinjski aparat,Nis,Uzice,14.2,
+user2@test.com,Stefan,Petrovic,0660753722,Slusalice bezicne,Zrenjanin,Uzice,,DELIVERED
+user5@test.com,Dusan,Nikolic,0637969756,Garderoba - paket,Beograd,Novi Pazar,12.2,
+user16@test.com,Nikola,Pavlovic,0676354323,Laptop Dell XPS 15,Novi Sad,Zrenjanin,0.6,IN_TRANSIT
+user7@test.com,Jelena,Stankovic,0686533593,Tableta Samsung,Cacak,Kragujevac,14.7,DELIVERED
+user4@test.com,Nikola,Djordjevic,0631905569,Tepih,Leskovac,Zrenjanin,,CANCELLED
+user16@test.com,Nikola,Pavlovic,0676354323,Obuca sportska,Subotica,Uzice,7.1,DELIVERED
+user10@test.com,Petar,Stojanovic,0669704024,Tepih,Kragujevac,Novi Sad,,CANCELLED
+user13@test.com,Tamara,Markovic,0620764661,Tableta Samsung,Beograd,Subotica,12.0,DELIVERED
+user10@test.com,Petar,Stojanovic,0669704024,Kucni aparat - mikser,Uzice,Pancevo,,IN_TRANSIT
+user5@test.com,Dusan,Nikolic,0637969756,Sportska oprema,Kragujevac,Zrenjanin,9.1,
+user9@test.com,Sara,Petrovic,0664579487,Mobilni telefon,Pancevo,Cacak,9.4,IN_TRANSIT
+user16@test.com,Nikola,Pavlovic,0676354323,Decja igracka,Nis,Kragujevac,12.4,DELIVERED
+user10@test.com,Petar,Stojanovic,0669704024,Garderoba - paket,Subotica,Nis,13.4,CANCELLED
+user6@test.com,Stefan,Markovic,0647948803,Sportska oprema,Pancevo,Cacak,8.4,
+user3@test.com,Jelena,Stevanovic,0676568267,Kafe aparat,Cacak,Leskovac,1.0,DELIVERED
+user15@test.com,Filip,Djordjevic,0622871302,Mobilni telefon,Pancevo,Subotica,6.9,
+user6@test.com,Stefan,Markovic,0647948803,Lampa stona,Novi Pazar,Beograd,6.5,IN_TRANSIT
