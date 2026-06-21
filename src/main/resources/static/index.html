@@ -70,6 +70,14 @@
         <button onclick="createShipment()">Create Shipment</button>
         <div id="shipment-msg" class="msg"></div>
     </div>
+
+    <div class="form-card">
+        <h2>Import Shipments (CSV)</h2>
+        <label>CSV File</label>
+        <input type="file" id="import-file" accept=".csv">
+        <button onclick="importCsv()">Import</button>
+        <div id="import-msg" class="msg"></div>
+    </div>
 </div>
 
 <div class="filter-bar">
@@ -175,6 +183,36 @@
             loadShipments();
         } else {
             msg.textContent = data.message;
+            msg.className = 'msg error';
+        }
+    }
+
+    async function importCsv() {
+        const fileInput = document.getElementById('import-file');
+        const file = fileInput.files[0];
+        const msg = document.getElementById('import-msg');
+
+        if (!file) {
+            msg.textContent = 'Please select a file first';
+            msg.className = 'msg error';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(`${SHIPMENTS_API}/import`, {
+            method: 'POST',
+            body: formData
+        });
+        const report = await res.json();
+
+        if (res.ok) {
+            msg.textContent = `Imported ${report.successCount} of ${report.totalRows} shipments`;
+            msg.className = 'msg success';
+            loadShipments();
+        } else {
+            msg.textContent = report.message;
             msg.className = 'msg error';
         }
     }
