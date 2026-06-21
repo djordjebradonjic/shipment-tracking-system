@@ -27,6 +27,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.Instant;
 
+
+
 import java.util.List;
 
 @RestController
@@ -62,8 +64,7 @@ public class ShipmentController {
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ImportReportResponse> importCsv(@RequestParam("file") MultipartFile file) {
         ImportReportResponse report = shipmentImportService.importCsv(file);
-        HttpStatus status = report.getErrors().isEmpty() ? HttpStatus.CREATED : HttpStatus.UNPROCESSABLE_ENTITY;
-        return ResponseEntity.status(status).body(report);
+        return ResponseEntity.status(HttpStatus.CREATED).body(report);
     }
 
     @GetMapping

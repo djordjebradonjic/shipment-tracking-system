@@ -1,7 +1,6 @@
 package com.example.shipment_tracking_system.service;
 
 import com.example.shipment_tracking_system.dto.response.ImportReportResponse;
-import com.example.shipment_tracking_system.dto.response.ImportRowError;
 import com.example.shipment_tracking_system.exception.CsvParsingException;
 import com.example.shipment_tracking_system.model.Shipment;
 import com.example.shipment_tracking_system.model.ShipmentStatus;
@@ -22,16 +21,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ShipmentImportService {
 
-    private static final int EXPECTED_COLUMNS = 5;
+    private static final int EXPECTED_COLUMNS = 9;
 
     private final UserRepository userRepository;
     private final ShipmentRepository shipmentRepository;
@@ -41,33 +38,41 @@ public class ShipmentImportService {
     @Transactional
     public ImportReportResponse importCsv(MultipartFile file) {
         List<String[]> rows = parseRows(file);
-        List<ImportRowError> errors = new ArrayList<>();
-        List<Shipment> validShipments = new ArrayList<>();
+        int successCount = 0;
 
         for (int i = 0; i < rows.size(); i++) {
             int rowNumber = i + 2;
             String[] columns = rows.get(i);
 
             if (columns.length < EXPECTED_COLUMNS) {
-                errors.add(new ImportRowError(rowNumber, "Expected " + EXPECTED_COLUMNS + " columns, found " + columns.length));
-                continue;
+                throw new CsvParsingException("Row " + rowNumber + ": expected " + EXPECTED_COLUMNS + " columns, found " + columns.length);
             }
 
             String email = columns[0].trim();
-            String description = columns[1].trim();
-            String origin = columns[2].trim();
-            String destination = columns[3].trim();
-            String weightRaw = columns[4].trim();
+            String firstName = columns[1].trim();
+            String lastName = columns[2].trim();
+            String phone = columns[3].trim();
+            String description = columns[4].trim();
+            String origin = columns[5].trim();
+            String destination = columns[6].trim();
+            String weightRaw = columns[7].trim();
+            String statusRaw = columns[8].trim();
 
             if (email.isBlank() || description.isBlank() || origin.isBlank() || destination.isBlank()) {
-                errors.add(new ImportRowError(rowNumber, "email, description, origin, and destination are required"));
-                continue;
+                throw new CsvParsingException("Row " + rowNumber + ": email, description, origin, and destination are required");
             }
 
-            Optional<User> userOpt = userRepository.findByEmail(email);
-            if (userOpt.isEmpty()) {
-                errors.add(new ImportRowError(rowNumber, "No user found with email: " + email));
-                continue;
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                if (firstName.isBlank() || lastName.isBlank()) {
+                    throw new CsvParsingException("Row " + rowNumber + ": new user requires firstName and lastName for email " + email);
+                }
+                user = userRepository.save(User.builder()
+                        .email(email)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .phone(phone.isBlank() ? null : phone)
+                        .build());
             }
 
             BigDecimal weightKg = null;
@@ -75,42 +80,44 @@ public class ShipmentImportService {
                 try {
                     weightKg = new BigDecimal(weightRaw);
                 } catch (NumberFormatException e) {
-                    errors.add(new ImportRowError(rowNumber, "Invalid weight value: " + weightRaw));
-                    continue;
+                    throw new CsvParsingException("Row " + rowNumber + ": invalid weight value " + weightRaw);
                 }
             }
 
-            Shipment shipment = Shipment.builder()
-                    .user(userOpt.get())
+            ShipmentStatus status = ShipmentStatus.CREATED;
+            if (!statusRaw.isBlank()) {
+                try {
+                    status = ShipmentStatus.valueOf(statusRaw.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    throw new CsvParsingException("Row " + rowNumber + ": invalid status value " + statusRaw);
+                }
+            }
+
+            Shipment shipment = shipmentRepository.save(Shipment.builder()
+                    .user(user)
                     .trackingNumber(trackingNumberGenerator.generate())
                     .description(description)
                     .origin(origin)
                     .destination(destination)
                     .weightKg(weightKg)
-                    .currentStatus(ShipmentStatus.CREATED)
-                    .build();
+                    .currentStatus(status)
+                    .build());
 
-            validShipments.add(shipment);
+            String note = status == ShipmentStatus.CREATED
+                    ? "Created via CSV import"
+                    : "Imported with status " + status + " via CSV — prior transitions not tracked";
+
+            statusHistoryRepository.save(ShipmentStatusHistory.builder()
+                    .shipment(shipment)
+                    .status(status)
+                    .note(note)
+                    .build());
+
+            successCount++;
         }
 
-        if (!errors.isEmpty()) {
-            log.warn("CSV import rejected: {} of {} rows invalid", errors.size(), rows.size());
-            return new ImportReportResponse(rows.size(), 0, errors);
-        }
-
-        List<Shipment> saved = shipmentRepository.saveAll(validShipments);
-
-        List<ShipmentStatusHistory> histories = saved.stream()
-                .map(s -> ShipmentStatusHistory.builder()
-                        .shipment(s)
-                        .status(ShipmentStatus.CREATED)
-                        .note("Created via CSV import")
-                        .build())
-                .toList();
-        statusHistoryRepository.saveAll(histories);
-
-        log.info("CSV import succeeded: {} shipments created", saved.size());
-        return new ImportReportResponse(rows.size(), saved.size(), List.of());
+        log.info("CSV import succeeded: {} shipments created", successCount);
+        return new ImportReportResponse(rows.size(), successCount);
     }
 
     private List<String[]> parseRows(MultipartFile file) {
@@ -123,7 +130,7 @@ public class ShipmentImportService {
         } catch (IOException e) {
             throw new CsvParsingException("Could not read CSV file: " + e.getMessage());
         } catch (CsvException e) {
-            throw new CsvParsingException("Invalidmo CSV file: " + e.getMessage());
+            throw new CsvParsingException("Malformed CSV file: " + e.getMessage());
         }
     }
 }

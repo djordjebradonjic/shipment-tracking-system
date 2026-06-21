@@ -12,5 +12,4 @@ import java.util.List;
 public class ImportReportResponse {
     private int totalRows;
     private int successCount;
-    private List<ImportRowError> errors;
 }
