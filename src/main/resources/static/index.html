@@ -20,6 +20,8 @@
         .filter-bar button { padding: 0.45rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-apply { background: #1a1a2e; color: white; }
         .btn-clear { background: #e9ecef; color: #1a1a2e; }
+        .sort-bar { display: flex; justify-content: flex-end; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .sort-bar select { padding: 0.45rem; border: 1px solid #ddd; border-radius: 6px; background: white; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #1a1a2e; color: white; font-weight: 600; }
@@ -35,6 +37,10 @@
         .modal-content { background: white; padding: 1.5rem; border-radius: 8px; max-width: 500px; width: 90%; max-height: 70vh; overflow-y: auto; }
         .modal-content ul { list-style: none; padding: 0; margin: 1rem 0; }
         .modal-content li { padding: 0.6rem 0; border-bottom: 1px solid #eee; }
+        .pagination-bar { display: flex; gap: 0.75rem; align-items: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 1rem; }
+        .pagination-bar select, .pagination-bar button { padding: 0.45rem 0.75rem; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+        .pagination-bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+        #page-info { font-size: 0.9rem; color: #555; }
     </style>
 </head>
 <body>
@@ -93,8 +99,20 @@
     </select>
     <input type="date" id="filter-createdFrom" title="Created from">
     <input type="date" id="filter-createdTo" title="Created to">
-    <button class="btn-apply" onclick="loadShipments()">Apply Filters</button>
+    <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
     <button class="btn-clear" onclick="clearFilters()">Clear</button>
+</div>
+
+<div class="sort-bar">
+    <select id="sort-field" onchange="currentPage = 0; loadShipments();">
+        <option value="createdAt">Sort: Created Date</option>
+        <option value="trackingNumber">Sort: Tracking Number</option>
+        <option value="currentStatus">Sort: Status</option>
+    </select>
+    <select id="sort-direction" onchange="currentPage = 0; loadShipments();">
+        <option value="desc">Newest first</option>
+        <option value="asc">Oldest first</option>
+    </select>
 </div>
 
 <table>
@@ -102,12 +120,25 @@
     <tr>
         <th>Tracking #</th>
         <th>Description</th>
+        <th>Owner</th>
+        <th>Created</th>
         <th>Status</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody id="shipments-body"></tbody>
 </table>
+
+<div class="pagination-bar">
+    <select id="page-size" onchange="currentPage = 0; loadShipments();">
+        <option value="10">10 per page</option>
+        <option value="20" selected>20 per page</option>
+        <option value="50">50 per page</option>
+    </select>
+    <button id="prev-page" onclick="changePage(-1)">Previous</button>
+    <span id="page-info">Page 1</span>
+    <button id="next-page" onclick="changePage(1)">Next</button>
+</div>
 
 <div id="history-modal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
@@ -120,6 +151,8 @@
 <script>
     const USERS_API = '/api/v1/users';
     const SHIPMENTS_API = '/api/v1/shipments';
+
+    let currentPage = 0;
 
     const NEXT_STATUSES = {
         CREATED: [{ status: 'IN_TRANSIT', label: 'Start Transit', cls: 'btn-advance' }, { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }],
@@ -217,7 +250,13 @@
         }
     }
 
+    function applyFilters() {
+        currentPage = 0;
+        loadShipments();
+    }
+
     function clearFilters() {
+        currentPage = 0;
         document.getElementById('filter-status').value = '';
         document.getElementById('filter-userId').value = '';
         document.getElementById('filter-createdFrom').value = '';
@@ -230,18 +269,27 @@
         const userId = document.getElementById('filter-userId').value;
         const createdFrom = document.getElementById('filter-createdFrom').value;
         const createdTo = document.getElementById('filter-createdTo').value;
+        const pageSize = document.getElementById('page-size').value;
+        const sortField = document.getElementById('sort-field').value;
+        const sortDirection = document.getElementById('sort-direction').value;
 
         const params = new URLSearchParams();
         if (status) params.append('status', status);
         if (userId) params.append('userId', userId);
         if (createdFrom) params.append('createdFrom', createdFrom + 'T00:00:00Z');
         if (createdTo) params.append('createdTo', createdTo + 'T23:59:59Z');
-        params.append('size', '50');
-        params.append('sort', 'createdAt,desc');
+        params.append('page', currentPage);
+        params.append('size', pageSize);
+        params.append('sort', `${sortField},${sortDirection}`);
 
         const res = await fetch(`${SHIPMENTS_API}?${params.toString()}`);
         const page = await res.json();
         const shipments = page.content;
+
+        document.getElementById('page-info').textContent = `Page ${page.number + 1} of ${Math.max(page.totalPages, 1)} (${page.totalElements} total)`;
+        document.getElementById('prev-page').disabled = page.first;
+        document.getElementById('next-page').disabled = page.last;
+
         const tbody = document.getElementById('shipments-body');
         tbody.innerHTML = '';
 
@@ -254,11 +302,18 @@
             row.innerHTML = `
                     <td>${s.trackingNumber}</td>
                     <td>${s.description}</td>
+                    <td>${s.ownerFullName}<br><span style="font-size:0.8rem;color:#888;">${s.ownerEmail}</span></td>
+                    <td>${new Date(s.createdAt).toLocaleString()}</td>
                     <td><span class="badge ${s.currentStatus}">${s.currentStatus}</span></td>
                     <td>${actions}</td>
                 `;
             tbody.appendChild(row);
         });
+    }
+
+    function changePage(delta) {
+        currentPage += delta;
+        loadShipments();
     }
 
     async function updateStatus(id, status) {

@@ -2,6 +2,7 @@ package com.example.shipment_tracking_system.repository;
 
 import com.example.shipment_tracking_system.model.Shipment;
 import com.example.shipment_tracking_system.model.ShipmentStatus;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
@@ -25,5 +26,14 @@ public class ShipmentSpecifications {
 
     public static Specification<Shipment> createdBefore(Instant to) {
         return (root, query, cb) -> to == null ? null : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+    }
+
+    public static Specification<Shipment> fetchUser() {
+        return (root, query, cb) -> {
+            if (Long.class != query.getResultType()) {
+                root.fetch("user", JoinType.LEFT);
+            }
+            return null;
+        };
     }
 }

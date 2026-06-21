@@ -123,7 +123,8 @@ public class ShipmentService {
         Specification<Shipment> spec = Specification.where(ShipmentSpecifications.hasUserId(userId))
                 .and(ShipmentSpecifications.hasStatus(status))
                 .and(ShipmentSpecifications.createdAfter(createdFrom))
-                .and(ShipmentSpecifications.createdBefore(createdTo));
+                .and(ShipmentSpecifications.createdBefore(createdTo))
+                .and(ShipmentSpecifications.fetchUser());
 
         return shipmentRepository.findAll(spec, pageable)
                 .map(shipmentMapper::toResponse);

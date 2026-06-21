@@ -3,6 +3,7 @@ package com.example.shipment_tracking_system.mapper;
 import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.model.Shipment;
+import com.example.shipment_tracking_system.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -21,7 +22,12 @@ public interface ShipmentMapper {
     Shipment toEntity(ShipmentCreateRequest request);
 
     @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.email", target = "ownerEmail")
+    @Mapping(target = "ownerFullName", expression = "java(fullName(shipment.getUser()))")
     ShipmentResponse toResponse(Shipment shipment);
 
+    default String fullName(User user) {
+        return user.getFirstName() + " " + user.getLastName();
+    }
     ShipmentStatusHistoryResponse toHistoryResponse(ShipmentStatusHistory history);
 }

@@ -27,4 +27,6 @@ public class ShipmentResponse {
     private ShipmentStatus currentStatus;
     private Instant createdAt;
     private Instant updatedAt;
+    private String ownerFullName;
+    private String ownerEmail;
 }
