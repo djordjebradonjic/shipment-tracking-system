@@ -4,6 +4,7 @@ import com.example.shipment_tracking_system.dto.request.ShipmentStatusUpdateRequ
 import com.example.shipment_tracking_system.dto.response.ShipmentStatusHistoryResponse;
 import com.example.shipment_tracking_system.exception.InvalidStatusTransitionException;
 
+import com.example.shipment_tracking_system.model.*;
 import com.example.shipment_tracking_system.repository.ShipmentSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,15 +15,13 @@ import com.example.shipment_tracking_system.dto.request.ShipmentCreateRequest;
 import com.example.shipment_tracking_system.dto.response.ShipmentResponse;
 import com.example.shipment_tracking_system.exception.ResourceNotFoundException;
 import com.example.shipment_tracking_system.mapper.ShipmentMapper;
-import com.example.shipment_tracking_system.model.Shipment;
-import com.example.shipment_tracking_system.model.ShipmentStatus;
-import com.example.shipment_tracking_system.model.ShipmentStatusHistory;
-import com.example.shipment_tracking_system.model.User;
 import com.example.shipment_tracking_system.repository.ShipmentRepository;
 import com.example.shipment_tracking_system.repository.ShipmentStatusHistoryRepository;
 import com.example.shipment_tracking_system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,7 +119,15 @@ public class ShipmentService {
 
     @Transactional(readOnly = true)
     public Page<ShipmentResponse> search(Long userId, ShipmentStatus status, Instant createdFrom, Instant createdTo, Pageable pageable) {
-        Specification<Shipment> spec = Specification.where(ShipmentSpecifications.hasUserId(userId))
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        if (currentUser.getRole() == Role.CUSTOMER) {
+            userId = currentUser.getId();
+
+        }
+            Specification<Shipment> spec = Specification.where(ShipmentSpecifications.hasUserId(userId))
                 .and(ShipmentSpecifications.hasStatus(status))
                 .and(ShipmentSpecifications.createdAfter(createdFrom))
                 .and(ShipmentSpecifications.createdBefore(createdTo))

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login — Shipment Tracking</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f7f7f8; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; max-width: 360px; }
+        h1 { margin-top: 0; color: #1a1a2e; font-size: 1.5rem; text-align: center; }
+        label { display: block; margin-top: 1rem; font-size: 0.85rem; color: #555; }
+        input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { margin-top: 1.5rem; width: 100%; padding: 0.6rem; background: #1a1a2e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .msg { margin-top: 0.75rem; font-size: 0.85rem; color: #dc3545; text-align: center; min-height: 1.2em; }
+        .link { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+        .link a { color: #0d6efd; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Shipment Tracking</h1>
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••">
+    <button onclick="login()">Log in</button>
+    <div id="msg" class="msg"></div>
+    <div class="link">
+        Don't have an account? <a href="/register.html">Register</a>
+    </div>
+</div>
+
+<script>
+    if (localStorage.getItem('jwt')) {
+        window.location.href = '/index.html';
+    }
+
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('msg');
+
+        const res = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('jwt', data.token);
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('email', data.email);
+            window.location.href = '/index.html';
+        } else {
+            msg.textContent = 'Invalid email or password.';
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') login();
+    });
+</script>
+</body>
+</html>

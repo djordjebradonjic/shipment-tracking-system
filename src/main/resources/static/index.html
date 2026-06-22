@@ -5,7 +5,10 @@
     <title>Shipment Tracking</title>
     <style>
         body { font-family: -apple-system, sans-serif; margin: 2rem; background: #f7f7f8; }
-        h1 { color: #1a1a2e; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .top-bar h1 { margin: 0; color: #1a1a2e; }
+        .user-info { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 1rem; }
+        .btn-logout { padding: 0.35rem 0.75rem; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
         .forms { display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
         .form-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex: 1; min-width: 280px; }
         .form-card h2 { margin-top: 0; font-size: 1.1rem; color: #1a1a2e; }
@@ -44,9 +47,16 @@
     </style>
 </head>
 <body>
-<h1>Shipment Tracking</h1>
 
-<div class="forms">
+<div class="top-bar">
+    <h1>Shipment Tracking</h1>
+    <div class="user-info">
+        <span id="current-user"></span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+</div>
+
+<div class="forms" id="employee-forms">
     <div class="form-card">
         <h2>Create User</h2>
         <label>First Name</label>
@@ -94,7 +104,7 @@
         <option value="DELIVERED">DELIVERED</option>
         <option value="CANCELLED">CANCELLED</option>
     </select>
-    <select id="filter-userId">
+    <select id="filter-userId" class="employee-only">
         <option value="">All Users</option>
     </select>
     <input type="date" id="filter-createdFrom" title="Created from">
@@ -149,25 +159,65 @@
 </div>
 
 <script>
+    const token = localStorage.getItem('jwt');
+    const role = localStorage.getItem('role');
+    const email = localStorage.getItem('email');
+
+    if (!token) {
+        window.location.href = '/login.html';
+    }
+
+    document.getElementById('current-user').textContent =
+        email + ' (' + role + ')';
+
+    if (role === 'CUSTOMER') {
+        document.getElementById('employee-forms').style.display = 'none';
+        document.getElementById('filter-userId').style.display = 'none';
+    }
+
+    function authHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        };
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('role');
+        localStorage.removeItem('email');
+        window.location.href = '/login.html';
+    }
+
     const USERS_API = '/api/v1/users';
     const SHIPMENTS_API = '/api/v1/shipments';
-
     let currentPage = 0;
 
     const NEXT_STATUSES = {
-        CREATED: [{ status: 'IN_TRANSIT', label: 'Start Transit', cls: 'btn-advance' }, { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }],
-        IN_TRANSIT: [{ status: 'DELIVERED', label: 'Mark Delivered', cls: 'btn-advance' }, { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }],
+        CREATED: [
+            { status: 'IN_TRANSIT', label: 'Start Transit', cls: 'btn-advance' },
+            { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }
+        ],
+        IN_TRANSIT: [
+            { status: 'DELIVERED', label: 'Mark Delivered', cls: 'btn-advance' },
+            { status: 'CANCELLED', label: 'Cancel', cls: 'btn-cancel' }
+        ],
         DELIVERED: [],
         CANCELLED: []
     };
 
     async function loadUsers() {
-        const res = await fetch(USERS_API);
+        if (role !== 'EMPLOYEE') return;
+        const res = await fetch(USERS_API, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
         const users = await res.json();
-        const options = users.map(u => `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`).join('');
-
+        const options = users.map(u =>
+            `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`
+        ).join('');
         document.getElementById('shipment-userId').innerHTML = options;
-        document.getElementById('filter-userId').innerHTML = '<option value="">All Users</option>' + options;
+        document.getElementById('filter-userId').innerHTML =
+            '<option value="">All Users</option>' + options;
     }
 
     async function createUser() {
@@ -179,7 +229,7 @@
         };
         const res = await fetch(USERS_API, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify(body)
         });
         const data = await res.json();
@@ -205,7 +255,7 @@
         };
         const res = await fetch(SHIPMENTS_API, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify(body)
         });
         const data = await res.json();
@@ -236,6 +286,7 @@
 
         const res = await fetch(`${SHIPMENTS_API}/import`, {
             method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
             body: formData
         });
         const report = await res.json();
@@ -258,7 +309,9 @@
     function clearFilters() {
         currentPage = 0;
         document.getElementById('filter-status').value = '';
-        document.getElementById('filter-userId').value = '';
+        if (role === 'EMPLOYEE') {
+            document.getElementById('filter-userId').value = '';
+        }
         document.getElementById('filter-createdFrom').value = '';
         document.getElementById('filter-createdTo').value = '';
         loadShipments();
@@ -266,7 +319,9 @@
 
     async function loadShipments() {
         const status = document.getElementById('filter-status').value;
-        const userId = document.getElementById('filter-userId').value;
+        const userId = role === 'EMPLOYEE'
+            ? document.getElementById('filter-userId').value
+            : '';
         const createdFrom = document.getElementById('filter-createdFrom').value;
         const createdTo = document.getElementById('filter-createdTo').value;
         const pageSize = document.getElementById('page-size').value;
@@ -282,11 +337,20 @@
         params.append('size', pageSize);
         params.append('sort', `${sortField},${sortDirection}`);
 
-        const res = await fetch(`${SHIPMENTS_API}?${params.toString()}`);
+        const res = await fetch(`${SHIPMENTS_API}?${params.toString()}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            logout();
+            return;
+        }
+
         const page = await res.json();
         const shipments = page.content;
 
-        document.getElementById('page-info').textContent = `Page ${page.number + 1} of ${Math.max(page.totalPages, 1)} (${page.totalElements} total)`;
+        document.getElementById('page-info').textContent =
+            `Page ${page.number + 1} of ${Math.max(page.totalPages, 1)} (${page.totalElements} total)`;
         document.getElementById('prev-page').disabled = page.first;
         document.getElementById('next-page').disabled = page.last;
 
@@ -295,14 +359,22 @@
 
         shipments.forEach(s => {
             const row = document.createElement('tr');
-            const actions = (NEXT_STATUSES[s.currentStatus] || [])
-                .map(opt => `<button class="${opt.cls}" onclick="updateStatus(${s.id}, '${opt.status}')">${opt.label}</button>`)
-                .join('') + `<button class="btn-history" onclick="showHistory(${s.id}, '${s.trackingNumber}')">History</button>`;
+
+            const statusButtons = role === 'EMPLOYEE'
+                ? (NEXT_STATUSES[s.currentStatus] || [])
+                    .map(opt => `<button class="${opt.cls}" onclick="updateStatus(${s.id}, '${opt.status}')">${opt.label}</button>`)
+                    .join('')
+                : '';
+
+            const actions = statusButtons +
+                `<button class="btn-history" onclick="showHistory(${s.id}, '${s.trackingNumber}')">History</button>`;
 
             row.innerHTML = `
                     <td>${s.trackingNumber}</td>
                     <td>${s.description}</td>
-                    <td>${s.ownerFullName}<br><span style="font-size:0.8rem;color:#888;">${s.ownerEmail}</span></td>
+                    <td>${s.ownerFullName}<br>
+                        <span style="font-size:0.8rem;color:#888;">${s.ownerEmail}</span>
+                    </td>
                     <td>${new Date(s.createdAt).toLocaleString()}</td>
                     <td><span class="badge ${s.currentStatus}">${s.currentStatus}</span></td>
                     <td>${actions}</td>
@@ -319,7 +391,7 @@
     async function updateStatus(id, status) {
         const res = await fetch(`${SHIPMENTS_API}/${id}/status`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({ status })
         });
         if (!res.ok) {
@@ -331,10 +403,13 @@
     }
 
     async function showHistory(shipmentId, trackingNumber) {
-        const res = await fetch(`${SHIPMENTS_API}/${shipmentId}/history`);
+        const res = await fetch(`${SHIPMENTS_API}/${shipmentId}/history`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
         const history = await res.json();
 
-        document.getElementById('history-title').textContent = `History — ${trackingNumber}`;
+        document.getElementById('history-title').textContent =
+            `History — ${trackingNumber}`;
         const list = document.getElementById('history-list');
         list.innerHTML = history.map(h => `
                 <li>

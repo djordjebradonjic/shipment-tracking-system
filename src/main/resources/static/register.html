@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register — Shipment Tracking</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f7f7f8; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; max-width: 360px; }
+        h1 { margin-top: 0; color: #1a1a2e; font-size: 1.5rem; text-align: center; }
+        label { display: block; margin-top: 1rem; font-size: 0.85rem; color: #555; }
+        input, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { margin-top: 1.5rem; width: 100%; padding: 0.6rem; background: #1a1a2e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .msg { margin-top: 0.75rem; font-size: 0.85rem; text-align: center; min-height: 1.2em; }
+        .msg.error { color: #dc3545; }
+        .msg.success { color: #198754; }
+        .link { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+        .link a { color: #0d6efd; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Create Account</h1>
+    <label>First Name</label>
+    <input type="text" id="firstName">
+    <label>Last Name</label>
+    <input type="text" id="lastName">
+    <label>Email</label>
+    <input type="email" id="email">
+    <label>Password</label>
+    <input type="password" id="password">
+    <label>Phone</label>
+    <input type="text" id="phone">
+    <label>Role</label>
+    <select id="role">
+        <option value="CUSTOMER">Customer</option>
+        <option value="EMPLOYEE">Employee</option>
+    </select>
+    <button onclick="register()">Register</button>
+    <div id="msg" class="msg"></div>
+    <div class="link">
+        Already have an account? <a href="/login.html">Log in</a>
+    </div>
+</div>
+
+<script>
+    if (localStorage.getItem('jwt')) {
+        window.location.href = '/index.html';
+    }
+
+    async function register() {
+        const body = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            phone: document.getElementById('phone').value,
+            role: document.getElementById('role').value
+        };
+        const msg = document.getElementById('msg');
+
+        const res = await fetch('/api/v1/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('jwt', data.token);
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('email', data.email);
+            msg.textContent = 'Account created! Redirecting...';
+            msg.className = 'msg success';
+            setTimeout(() => window.location.href = '/index.html', 1000);
+        } else {
+            const err = await res.json();
+            msg.textContent = err.message || 'Registration failed.';
+            msg.className = 'msg error';
+        }
+    }
+</script>
+</body>
+</html>

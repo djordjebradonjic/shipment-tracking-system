@@ -27,6 +27,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-
+jwt:
+  secret: shipment-tracking-system-secret-key-must-be-at-least-256-bits-long
+  expiration: 86400000
 server:
   port: ${SERVER_PORT:8080}
+
