@@ -12,5 +12,6 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     User toEntity(UserCreateRequest request);
 
+    @Mapping(source = "role", target = "role")
     UserResponse toResponse(User user);
 }

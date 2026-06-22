@@ -205,19 +205,25 @@
         DELIVERED: [],
         CANCELLED: []
     };
-
     async function loadUsers() {
         if (role !== 'EMPLOYEE') return;
         const res = await fetch(USERS_API, {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         const users = await res.json();
-        const options = users.map(u =>
+
+        const allOptions = users.map(u =>
             `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`
         ).join('');
-        document.getElementById('shipment-userId').innerHTML = options;
+
+        const customerOptions = users
+            .filter(u => u.role === 'CUSTOMER')
+            .map(u => `<option value="${u.id}">${u.firstName} ${u.lastName} (#${u.id})</option>`)
+            .join('');
+
+        document.getElementById('shipment-userId').innerHTML = customerOptions;
         document.getElementById('filter-userId').innerHTML =
-            '<option value="">All Users</option>' + options;
+            '<option value="">All Users</option>' + allOptions;
     }
 
     async function createUser() {

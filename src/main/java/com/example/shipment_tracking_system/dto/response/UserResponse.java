@@ -1,5 +1,6 @@
 package com.example.shipment_tracking_system.dto.response;
 
+import com.example.shipment_tracking_system.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +22,5 @@ public class UserResponse {
     private String email;
     private String phone;
     private Instant createdAt;
+    private Role role;
 }
