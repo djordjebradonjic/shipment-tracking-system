@@ -2,10 +2,7 @@ package com.example.shipment_tracking_system.service;
 
 import com.example.shipment_tracking_system.dto.response.ImportReportResponse;
 import com.example.shipment_tracking_system.exception.CsvParsingException;
-import com.example.shipment_tracking_system.model.Shipment;
-import com.example.shipment_tracking_system.model.ShipmentStatus;
-import com.example.shipment_tracking_system.model.ShipmentStatusHistory;
-import com.example.shipment_tracking_system.model.User;
+import com.example.shipment_tracking_system.model.*;
 import com.example.shipment_tracking_system.repository.ShipmentRepository;
 import com.example.shipment_tracking_system.repository.ShipmentStatusHistoryRepository;
 import com.example.shipment_tracking_system.repository.UserRepository;
@@ -14,6 +11,7 @@ import com.opencsv.exceptions.CsvException;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +34,7 @@ public class ShipmentImportService {
     private final ShipmentStatusHistoryRepository statusHistoryRepository;
     private final TrackingNumberGenerator trackingNumberGenerator;
     private final EntityManager entityManager;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public ImportReportResponse importCsv(MultipartFile file) {
@@ -79,6 +78,8 @@ public class ShipmentImportService {
                             .firstName(firstName)
                             .lastName(lastName)
                             .phone(phone.isBlank() ? null : phone)
+                            .password(passwordEncoder.encode("password"))
+                            .role(Role.CUSTOMER)
                             .build());
                 }
 
