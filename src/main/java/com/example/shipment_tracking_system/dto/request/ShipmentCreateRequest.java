@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Builder
 public class ShipmentCreateRequest {
 
-    @NotNull
+
     private Long userId;
 
     @NotBlank

@@ -96,6 +96,22 @@
     </div>
 </div>
 
+<div class="forms" id="customer-forms" style="display:none;">
+    <div class="form-card">
+        <h2>Create Shipment</h2>
+        <label>Description</label>
+        <input type="text" id="customer-description">
+        <label>Origin</label>
+        <input type="text" id="customer-origin">
+        <label>Destination</label>
+        <input type="text" id="customer-destination">
+        <label>Weight (kg)</label>
+        <input type="number" step="0.01" id="customer-weight">
+        <button onclick="createCustomerShipment()">Create Shipment</button>
+        <div id="customer-msg" class="msg"></div>
+    </div>
+</div>
+
 <div class="filter-bar">
     <select id="filter-status">
         <option value="">All Statuses</option>
@@ -104,7 +120,7 @@
         <option value="DELIVERED">DELIVERED</option>
         <option value="CANCELLED">CANCELLED</option>
     </select>
-    <select id="filter-userId" class="employee-only">
+    <select id="filter-userId">
         <option value="">All Users</option>
     </select>
     <input type="date" id="filter-createdFrom" title="Created from">
@@ -173,6 +189,7 @@
     if (role === 'CUSTOMER') {
         document.getElementById('employee-forms').style.display = 'none';
         document.getElementById('filter-userId').style.display = 'none';
+        document.getElementById('customer-forms').style.display = 'flex';
     }
 
     function authHeaders() {
@@ -205,6 +222,7 @@
         DELIVERED: [],
         CANCELLED: []
     };
+
     async function loadUsers() {
         if (role !== 'EMPLOYEE') return;
         const res = await fetch(USERS_API, {
@@ -266,6 +284,31 @@
         });
         const data = await res.json();
         const msg = document.getElementById('shipment-msg');
+        if (res.ok) {
+            msg.textContent = `Created shipment ${data.trackingNumber}`;
+            msg.className = 'msg success';
+            loadShipments();
+        } else {
+            msg.textContent = data.message;
+            msg.className = 'msg error';
+        }
+    }
+
+    async function createCustomerShipment() {
+        const weightInput = document.getElementById('customer-weight').value;
+        const body = {
+            description: document.getElementById('customer-description').value,
+            origin: document.getElementById('customer-origin').value,
+            destination: document.getElementById('customer-destination').value,
+            weightKg: weightInput ? Number(weightInput) : null
+        };
+        const res = await fetch(SHIPMENTS_API, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const msg = document.getElementById('customer-msg');
         if (res.ok) {
             msg.textContent = `Created shipment ${data.trackingNumber}`;
             msg.className = 'msg success';
@@ -376,15 +419,15 @@
                 `<button class="btn-history" onclick="showHistory(${s.id}, '${s.trackingNumber}')">History</button>`;
 
             row.innerHTML = `
-                    <td>${s.trackingNumber}</td>
-                    <td>${s.description}</td>
-                    <td>${s.ownerFullName}<br>
-                        <span style="font-size:0.8rem;color:#888;">${s.ownerEmail}</span>
-                    </td>
-                    <td>${new Date(s.createdAt).toLocaleString()}</td>
-                    <td><span class="badge ${s.currentStatus}">${s.currentStatus}</span></td>
-                    <td>${actions}</td>
-                `;
+                <td>${s.trackingNumber}</td>
+                <td>${s.description}</td>
+                <td>${s.ownerFullName}<br>
+                    <span style="font-size:0.8rem;color:#888;">${s.ownerEmail}</span>
+                </td>
+                <td>${new Date(s.createdAt).toLocaleString()}</td>
+                <td><span class="badge ${s.currentStatus}">${s.currentStatus}</span></td>
+                <td>${actions}</td>
+            `;
             tbody.appendChild(row);
         });
     }
@@ -418,14 +461,14 @@
             `History — ${trackingNumber}`;
         const list = document.getElementById('history-list');
         list.innerHTML = history.map(h => `
-                <li>
-                    <span class="badge ${h.status}">${h.status}</span>
-                    <div style="margin-top:0.3rem; font-size:0.85rem; color:#555;">
-                        ${new Date(h.changedAt).toLocaleString()}
-                        ${h.note ? ' — ' + h.note : ''}
-                    </div>
-                </li>
-            `).join('');
+            <li>
+                <span class="badge ${h.status}">${h.status}</span>
+                <div style="margin-top:0.3rem; font-size:0.85rem; color:#555;">
+                    ${new Date(h.changedAt).toLocaleString()}
+                    ${h.note ? ' — ' + h.note : ''}
+                </div>
+            </li>
+        `).join('');
 
         document.getElementById('history-modal').style.display = 'flex';
     }

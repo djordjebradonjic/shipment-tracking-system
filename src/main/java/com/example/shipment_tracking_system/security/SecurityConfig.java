@@ -42,8 +42,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/shipments").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/shipments/**").authenticated()
-                        .requestMatchers("/api/v1/shipments/import").hasRole("EMPLOYEE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/shipments/import").hasRole("EMPLOYEE")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/shipments/**").hasRole("EMPLOYEE")
                         .requestMatchers("/api/v1/users/**").hasRole("EMPLOYEE")
                         .anyRequest().authenticated()

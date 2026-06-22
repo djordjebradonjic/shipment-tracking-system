@@ -44,8 +44,16 @@ public class ShipmentService {
     private final TrackingNumberGenerator trackingNumberGenerator;
 
     public ShipmentResponse create(ShipmentCreateRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        Long userId = currentUser.getRole() == Role.CUSTOMER
+                ? currentUser.getId()
+                : request.getUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId));
 
         Shipment shipment = shipmentMapper.toEntity(request);
         shipment.setUser(user);
@@ -62,7 +70,6 @@ public class ShipmentService {
         statusHistoryRepository.save(history);
 
         log.info("Created shipment {} for user {}", saved.getTrackingNumber(), user.getId());
-
         return shipmentMapper.toResponse(saved);
     }
 
