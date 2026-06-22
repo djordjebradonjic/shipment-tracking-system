@@ -73,6 +73,15 @@ Sample CSV files are available in the `sample-data/` folder.
 ### API Documentation
 Swagger UI is available at **http://localhost:8080/swagger-ui.html** without authentication.
 
+### Using Swagger UI with Authentication
+
+Some endpoints require authentication. To authorize in Swagger UI:
+
+1. Register an account at `POST /api/v1/auth/register` or use the test credentials above
+2. Login at `POST /api/v1/auth/login` — copy the `token` from the response
+3. Click the **Authorize** button (top right in Swagger UI)
+4. Enter: `Bearer <your-token>` and click Authorize
+5. All subsequent requests will include the token automatically
 ---
 
 ## Tech Stack
