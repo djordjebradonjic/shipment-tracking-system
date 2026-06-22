@@ -39,7 +39,7 @@ public class SecurityConfig {
                                 "/login.html",
                                 "/register.html",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
+                                "/swagger-ui.index.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/shipments").authenticated()

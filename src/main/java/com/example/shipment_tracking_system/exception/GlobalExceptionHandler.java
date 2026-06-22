@@ -31,6 +31,21 @@ public class GlobalExceptionHandler {
         log.warn("Validation failed: {}", message);
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+            org.springframework.http.converter.HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+        String message = "Invalid request body";
+        Throwable cause = ex.getCause();
+        if (cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException ife
+                && ife.getTargetType() != null
+                && ife.getTargetType().isEnum()) {
+            message = "Invalid value '" + ife.getValue() + "'. Allowed values: "
+                    + java.util.Arrays.toString(ife.getTargetType().getEnumConstants());
+        }
+        log.warn("Invalid request body: {}", message);
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
