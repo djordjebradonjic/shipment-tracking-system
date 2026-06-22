@@ -1,0 +1,3 @@
+email,firstName,lastName,phone,description,origin,destination,weightKg,status
+rollback.user1@test.com,Marko,Petrovic,0601234567,Test Laptop,Novi Sad,Beograd,2.1,
+rollback.newuser@test.com,,Bezimeni,0631112233,Paket bez imena,Novi Sad,Beograd,1.0,

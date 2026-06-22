@@ -1,0 +1,4 @@
+email,firstName,lastName,phone,description,origin,destination,weightKg,status
+import.test1@test.com,Marko,Petrovic,0601234567,Test Laptop,Novi Sad,Beograd,2.1,
+import.test2@test.com,Ana,Anic,0639876543,Test Knjige,Beograd,Nis,1.5,IN_TRANSIT
+import.test1@test.com,Marko,Petrovic,0601234567,Test Telefon,Novi Sad,Subotica,,
