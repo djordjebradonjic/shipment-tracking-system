@@ -71,7 +71,7 @@ Sample CSV files are available in the `sample-data/` folder.
 - Shipment history modal showing full audit trail per shipment
 
 ### API Documentation
-Swagger UI is available at **http://localhost:8080/swagger-ui.html** without authentication.
+Swagger UI is available at **http://localhost:8080/swagger-ui/index.html#/** without authentication.
 
 ### Using Swagger UI with Authentication
 
